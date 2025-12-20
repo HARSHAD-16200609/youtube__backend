@@ -15,6 +15,7 @@ catch(error){
 async function connectdb(connection_url) {
   try {
     const connection_instance = await mongoose.connect(connection_url);
+    
     console.log(
       `DB connected sucessfully DB_HOST:${connection_instance.connection.host}`
     );
