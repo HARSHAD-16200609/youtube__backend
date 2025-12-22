@@ -53,27 +53,38 @@ const userSchema = new Schema(
 userSchema.plugin(mongooseAggregatePaginate);
 
 // mongoose hook like event listener in js dom
-userSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) return;
+userSchema.pre("save", async function () {
+  if (!this.isModified("password")) return 
 
-  this.password = bcrypt.hash(this.password, 10);
-  next();
+  this.password =await bcrypt.hash(this.password, 10);
+  // we dont use next() in mongoose async prehooks
+  // next();
 });
+
+
 
 userSchema.methods.isPasswordCorrect = async function (password) {
   return await bcrypt.compare(password, this.password);
 };
 
-userSchema.methods.generateAccessToken = async function () {
-  if (!isPasswordCorrect(this.password)) return;
 
-  return (jwt_token = jwt.sign(
-    { _id: this._id, password: this.password, username: this.username },
+userSchema.methods.generateAccessToken = async function () {
+  // this was  causing error when generate token func used in controllers 
+  // if (!isPasswordCorrect(this.password)) return;
+
+  //also wrong way as this.isPassword returns an prommise and promise are truthy always
+  //therefore net below condition in if is always false so acess token is generated 
+  // if (!this.isPasswordCorrect(this.password)) return;
+
+ // pass check logic req here
+
+  return jwt.sign(
+    { _id: this._id, email:this.email, username: this.username },
     process.env.ACCESS_TOKEN_SECRET,
     {
       expiresIn: process.env.ACCESS_TOKEN_EXPIRY,
     }
-  ));
+  )
 };
 userSchema.methods.generateRefreshToken = async function () {
   if (!isPasswordCorrect(this.password)) return;
@@ -88,3 +99,5 @@ userSchema.methods.generateRefreshToken = async function () {
 };
 
 const User = mongoose.model("User", userSchema);
+
+export {User}

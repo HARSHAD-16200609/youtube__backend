@@ -1,17 +1,17 @@
 
 
- const async_handler =  (request_handler)=>async (res,req,next)=>{
+ const async_handler =   (request_handler)=>async (req,res,next)=>{
   
     try{
-        await request_handler(req,res,next)
+     await request_handler(req,res,next)
         
     }
     catch(error)
     {
         console.log(`ERROR : ${error}`);
-res.status(err.code).json({
+res.status(error.statusCode ||500).json({
     sucess:false,
-    message:err.message
+    message:error.message
 })        
     }
  }
