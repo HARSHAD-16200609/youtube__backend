@@ -5,6 +5,7 @@ import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import bcrypt from "bcrypt";
 import { Api_Response } from "../utils/Api_Response.js";
 import jwt from "jsonwebtoken"
+import upload from "../middlewares/multer.middleware.js";
 
 
 const registerUser = async_handler(async (req, res) => {
@@ -213,4 +214,90 @@ const refreshAccessToken = async_handler(async (req, res) => {
     }
 });
 
-export { registerUser, loginUser, logoutUser, refreshAccessToken };
+const changeCurrentPassword = async_handler(async(req,res)=>{
+  const {oldPassword,newPassword} = req.body
+  console.log(oldPassword);
+  
+   const user = await User.findById(req.user?._id);
+
+  const isValid=await user.isPasswordCorrect(oldPassword)
+
+  if(!isValid) throw new API_Error(400,"Invalid Credentials")
+
+// save used instead of findbyidandupdate as we want 
+// the pre hook to run the pre hook dosent runs using findbyidandupdate
+ 
+ user.password = newPassword;
+await user.save({validateBeforeSave:false});
+
+
+
+  res.status(201).json(new Api_Response(201,{},"Password Reset Succesfully"))
+
+})
+
+const getCurrentUser = async_handler(async(req, res) => {
+    return res
+    .status(200)
+    .json(new Api_Response(
+        200,
+        req.user,
+        "User fetched successfully"
+    ))
+})
+
+const updateAccountDetails = async_handler(async(req, res) => {
+    const {fullName, email} = req.body
+
+    if (!fullName || !email) {
+        throw new API_Error(400, "All fields are required")
+    }
+
+    const user = await User.findByIdAndUpdate(
+        req.user?._id,
+        {
+            $set: {
+                fullName,
+                 email
+            }
+        },
+        {new: true}
+        
+    ).select("-password")
+
+    return res
+    .status(200)
+    .json(new Api_Response(200, user, "Account details updated successfully"))
+});
+
+
+const userAvatarUpdate = async_handler(async(req,res)=>{
+  const avatarLocalPath = req.file?.path;
+  
+  if(!avatarLocalPath) throw new API_Error(400,"Please attach an Image file")
+
+   const newAvatarPath= await uploadOnCloudinary(avatarLocalPath);
+console.log(newAvatarPath);
+
+    if(!newAvatarPath) throw new API_Error(500,"File Failed to Upload")
+
+ const newUser=await User.findByIdAndUpdate(req.user?._id,
+    {
+   $set:{avatar: newAvatarPath}
+   },
+   {new:true})
+   
+   
+  res.status(201).json(new Api_Response(200,newUser,"Avatar changed sucessfully"))
+})
+
+export {
+  registerUser,
+  loginUser, 
+  logoutUser,
+   refreshAccessToken,
+   changeCurrentPassword ,
+   updateAccountDetails,
+   getCurrentUser,
+   userAvatarUpdate
+  };
