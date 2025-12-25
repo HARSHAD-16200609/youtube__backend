@@ -24,10 +24,9 @@ const uploadOnCloudinary = async (localFilePath) => {
       fs.unlinkSync(localFilePath);
     }
 
-    return {
-      secure_url: response.secure_url,
-      public_id: response.public_id,
-    };
+   
+     return response
+      
   } catch (error) {
     console.error("Cloudinary upload failed:", error.message);
 
@@ -39,13 +38,35 @@ const uploadOnCloudinary = async (localFilePath) => {
   }
 };
 
-const deleteFromCloudinary = async (localFilePath)=>{
-  try{
-    await cloudinary.uploader.destroy(localFilePath);  
-  }catch(error){
-console.log(`ERROR:${error.message}`)
+const deleteFromCloudinary = async (publicId,resourcetype="image") => {
+
+  if (!isConfigured) {
+    cloudinary.config({
+      cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+      api_key: process.env.CLOUDINARY_API_KEY,
+      api_secret: process.env.CLOUDINARY_API_SECRET,
+    });
+    isConfigured = true;
   }
-}
+
+  try {
+    if (!publicId) {
+      console.log("No public ID provided for deletion");
+      return null;
+    }
+    if(resourcetype === "image"){
+  await cloudinary.uploader.destroy(publicId);
+    }
+   else if(resourcetype === "video"){
+    await cloudinary.uploader.destroy(publicId, {
+  resource_type: "video",
+});
+   }
+  } catch (error) {
+    console.log(`ERROR deleting from Cloudinary: ${error.message}`);
+    return null;
+  }
+};
 
 
 export { uploadOnCloudinary,deleteFromCloudinary };

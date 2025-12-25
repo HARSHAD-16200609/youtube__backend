@@ -1,45 +1,54 @@
-import mongoose , {Schema} from 'mongoose'
-import mongooseAggregatePaginate from 'mongoose-aggregate-paginate-v2';
+import mongoose, { Schema } from "mongoose";
+import mongooseAggregatePaginate from "mongoose-aggregate-paginate-v2";
 
+const videoSchema = new Schema(
+    {
+        videoFile: {
+            type: String, // cloudinary url
+            required: true,
+    
+        },
 
-const videoSchema = new Schema({
-    videoFile:{
-        type:String, // cloudinary url
-        required:true
+        videoFilePubId: { type: String },
+        thumbnail: {
+            type: String,
+            required: true,
+            
+        },
+
+        thumbnailPubId: {
+            type: String,
+        },
+
+        owner: {
+            type: Schema.Types.ObjectId,
+            ref: "User",
+        },
+        title: {
+            type: String,
+            required: true,
+        },
+        description: {
+            type: String,
+            required: true,
+        },
+        duration: {
+            type: Number,
+            required: true,
+        },
+        views: {
+            type: Number,
+            required: true,
+            default: 0,
+        },
+        isPublished: {
+            type: Boolean,
+            default: true,
+        },
     },
-    thumbnail:{
-        type:String,
-        required:true
-    },
-    owner:{
-        type:Schema.Types.ObjectId,
-        ref:"User"
-    },
-    title:{
-        String,
-    required: true
-    },
-    description:{
-        type:String,
-        required:true
-    },
-duration:{
-    type:Number,
-    required:true
-},
-views:{
-    type:Number,
-    required:true,
-    default:0
-},
-isPublished:{
-    type:Boolean,
-    default:true
-}
-},{timestamps:true})
+    { timestamps: true }
+);
 
-videoSchema.plugin(mongoose-mongooseAggregatePaginate)
+videoSchema.plugin(mongooseAggregatePaginate);
 
-
-
-export const Video = mongoose.model("Video",videoSchema);
+export const Video = mongoose.model("Video", videoSchema);
