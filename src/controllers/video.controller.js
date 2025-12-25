@@ -59,7 +59,7 @@ const getAllVideos = async_handler(async (req, res) => {
 
 const publishAVideo = async_handler(async (req, res) => {
     const { title, description } = req.body;
-console.log(req.user._id);
+
     // TODO: get video, upload to cloudinary, create video
 
 
@@ -68,8 +68,7 @@ console.log(req.user._id);
     if (!req.user._id) throw new API_Error(400, "Invalid credentials");
     const videoLocalPath = req.files.video[0].path;
     const thumbnailLocalPath = req.files.thumbnail[0].path;
-    console.log(videoLocalPath);
-    console.log(thumbnailLocalPath);
+
     
 
     const video_Url = await uploadOnCloudinary(videoLocalPath);
