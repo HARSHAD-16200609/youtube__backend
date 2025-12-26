@@ -16,9 +16,10 @@ videoRouter.route("/publishVideo").post(upload.fields([{
     name:"thumbnail",
     maxCount:1
 }]),publishAVideo)
-videoRouter.route("/getVideo/:videoId").get(getVideoById)
-videoRouter.route("/updateVidInfo/:videoId").patch(upload.single("thumbnail"),updateVideo)
-videoRouter.route("/deleteVideo/:videoId").delete(deleteVideo)
+videoRouter.route("/:videoId")
+.get(getVideoById)
+.patch(upload.single("thumbnail"),updateVideo)
+.delete(deleteVideo)
 videoRouter.route("/togglePublishStatus/:videoId").get(togglePublishStatus)
 
 
