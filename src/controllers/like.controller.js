@@ -39,6 +39,37 @@ const toggleCommentLike = async_handler(async (req, res) => {
 });
 
 const toggleTweetLike = async_handler(async (req, res) => {
+const { tweetId } = req.params;
+    //TODO: toggle like on tweet
+
+    const userId = req.user._id;
+    //TODO: toggle like on video
+    if (!isValidObjectId) throw new API_Error(400, "Enter an valid tweetId");
+
+    const existingLike = await Like.findOne({
+        tweet: tweetId,
+        likedBy: userId,
+    
+    });
+    if (existingLike) {
+        await existingLike.deleteOne();
+     return res.status(200)
+            .json(new Api_Response(200,{}, "Unliked the tweet Successfully"));
+    }
+    else {
+        const like = await Like.create({
+            tweet: tweetId,
+            likedBy: userId,
+          
+        });
+        if (!like) throw new API_Error(500, "Failed to like the tweet");
+        return res
+            .status(200)
+            .json(new Api_Response(200, like, "Liked the tweet Successfully"));
+    }
+
+
+
 
 });
 
