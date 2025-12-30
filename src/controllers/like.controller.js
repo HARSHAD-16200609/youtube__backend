@@ -136,6 +136,7 @@ const getLikedVideos = async_handler(async (req, res) => {
                             duration: 1,
                             views: 1,
                             Owner: 1,
+                            createdAt:1
                         },
                     },
                 ],
