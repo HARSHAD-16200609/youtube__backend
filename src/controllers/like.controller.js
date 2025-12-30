@@ -1,5 +1,6 @@
 import mongoose, { isValidObjectId } from "mongoose";
 import { Like } from "../models/like.model.js";
+import {Video} from "../models/video.model.js"
 import { API_Error } from "../utils/Api_error.js";
 import { Api_Response } from "../utils/Api_Response.js";
 import { async_handler } from "../utils/async-handler.js";
@@ -8,7 +9,7 @@ const toggleVideoLike = async_handler(async (req, res) => {
     const { videoId } = req.params;
     const userId = req.user._id;
     //TODO: toggle like on video
-    if (!isValidObjectId) throw new API_Error(400, "Enter an valid VideoId");
+    if (!isValidObjectId(videoId)) throw new API_Error(400, "Enter an valid VideoId");
 
     const existingLike = await Like.findOne({
         video: videoId,
@@ -20,6 +21,10 @@ const toggleVideoLike = async_handler(async (req, res) => {
             .status(200)
             .json(new Api_Response(200, {}, "Unliked the Video Successfully"));
     } else {
+        const existingVideo = await Video.findById(videoId)
+        if(!existingVideo){
+            throw new API_Error(404, "Video not found");
+        }
         const like = await Like.create({
             video: new mongoose.Types.ObjectId(videoId),
             likedBy: userId,
