@@ -112,9 +112,64 @@ const getVideoById = async_handler(async (req, res) => {
         { new: true }
     );
 
-    const video = await Video.findById(videoId).select(
-        "-videoFilePubId -thumbnailPubId"
-    );
+    const video = await Video.aggregate([
+        {
+            $match: {
+                _id: new mongoose.Types.ObjectId(videoId),
+            },
+        },
+        {
+            $lookup: {
+                from: "users",
+                localField: "owner",
+                foreignField: "_id",
+                as: "Owner",
+                pipeline: [
+                    {
+                        $project: {
+                            avatar: 1,
+                            username: 1,
+                        },
+                    },
+                ],
+            },
+        },
+        {
+            $unwind: "$Owner",
+        },
+        {
+            $project: {
+                videoFile: 1,
+                thumbnail: 1,
+                title: 1,
+                duration: 1,
+                views: 1,
+                isPublished: 1,
+                avatar: "$Owner.avatar",
+                username: "$Owner.username",
+            },
+        },
+        {$lookup:{
+            from:"comments",
+            localField:"_id",
+            foreignField:"video",
+            as:"Comments",
+            pipeline:[{$lookup:{
+                from:"users",
+                localField:"owner",
+                foreignField:"_id",
+                as:"Commentor"
+            }},{$unwind:"$Commentor"},{$project:{
+                channelAvatar:"$Commentor.avatar",
+                channelName:"$Commentor.username"
+            }}]
+
+        }}
+        ,{$unwind:
+            "$Comments"
+    },
+    ]);
+
     if (!video) throw new API_Error(404, "Video not found");
 
     await User.findByIdAndUpdate(
